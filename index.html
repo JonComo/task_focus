@@ -1,0 +1,206 @@
+<html>
+    <head>
+        <title>Task Focus</title>
+        <link rel="stylesheet" tyep="text/css" href="style.css">
+    </head>
+
+    <body>
+        <a href="home" id="title">TASK FOCUS</a>
+        <div id="controls">
+            <input class="inputdata" id="task" type="text" placeholder="TASK" autocapitalize="on"></input>
+            <input class="inputdata" id="time" type="number" placeholder="HOURS"></input>
+            <button class="inputbutton" id="create" type="button">CREATE</button>
+        </div>
+
+        <div id="list">
+
+        </div>
+
+        <script type="text/javascript">
+        var colors = ["#F8B195", "#F67280", "#C06C84", "#6C5B7B", "#355C7D"];
+        
+        var input = document.getElementById("create");
+        var list = document.getElementById("list");
+
+        var task = document.getElementById("task");
+        var time = document.getElementById("time");
+
+        var task_id_counter = 0;
+        var tasks = [];
+
+        // initial focus
+        task.focus();
+
+        time.onkeyup = function(e) {
+            if (e.keyCode == 13) {
+                // Enter
+                create_task();
+                update_list();
+            }
+        };
+
+        input.onmousedown = function() {
+            create_task();
+            update_list();
+        };
+
+        function create_task() {
+            var seconds = Number(time.value) * 60 * 60;
+
+            if (task.value == null || task.value.length == 0 || time.value.length == 0 || isNaN(seconds)) {
+                renew_focus();
+                return;
+            }
+            
+            var task_item = {"id":task_id_counter, "task": task.value.toUpperCase(), "time": seconds, "init_time": seconds, "running": false};
+            tasks.push(task_item);
+            task_id_counter += 1;
+
+            create_task_div(task_item);
+            update_list();
+
+            renew_focus();
+        }
+
+        function create_task_div(task_item) {
+
+            var task_div = document.createElement('div');
+            task_div.id = "task_item";
+
+            var color_id = Math.min(list.children.length, colors.length-1);
+            task_div.style = "background-color: " + colors[color_id] + ";";
+
+            var p_info = document.createElement('p');
+            task_div.appendChild(p_info);
+
+            var button_start = document.createElement("input");
+            button_start.type = "button";
+            button_start.onmousedown = toggle_task;
+            button_start.id = "button_start";
+            button_start.className = "inputbutton";
+
+            task_div.appendChild(button_start);
+
+            var button_remove = document.createElement("input");
+            button_remove.type = "button";
+            button_remove.value = "REMOVE";
+            button_remove.onmousedown = remove_task;
+            button_remove.id = "button_remove";
+            button_remove.className = "inputbutton";
+
+            task_div.appendChild(button_remove);
+
+            var img = document.createElement("IMG");
+            img.src = "running_crop.gif";
+            img.id = "running_dog";
+            img.style.visibility = "hidden";
+            task_div.appendChild(img);
+
+            task_item["ele_button_start"] = button_start;
+            task_item["ele_button_remove"] = button_remove;
+            task_item["ele_p"] = p_info;
+            task_item["ele_div"] = task_div;
+            task_item["ele_img"] = img;
+
+            list.appendChild(task_div);
+        }
+
+        function renew_focus() {
+            task.value = "";
+            time.value = "";
+            task.focus();
+        }
+
+        function update_list() {
+            /*
+            while (list.firstChild) {
+                list.removeChild(list.firstChild);
+            } */
+
+            for (var i = 0; i < tasks.length; i++) {
+                var task_item = tasks[i];
+
+                var button_start = task_item["ele_button_start"];
+                var p_info = task_item["ele_p"];
+                var task_div = task_item["ele_div"];
+                var img = task_item["ele_img"];
+
+                if (task_item["running"]) {
+                    button_start.value = "PAUSE";
+                    task_div.id = "task_item_running";
+                    img.style.visibility = "visible";
+                } else {
+                    button_start.value = "START";
+                    task_div.id = "task_item";
+                    img.style.visibility = "hidden";
+                }
+
+                var seconds = Number(task_item["time"]);
+                var date_string = new Date(seconds * 1000).toISOString().substr(11, 8);
+                p_info.textContent = task_item["task"] + " " + date_string;
+            }
+        }
+
+        function task_for_event(e) {
+            console.log(e.target.parentElement);
+            var task = null;
+            for (var i = 0; i < tasks.length; i++) {
+                var task_item = tasks[i];
+                if (task_item["ele_div"] == e.target.parentElement) {
+                    task = task_item;
+                    break;
+                }
+            }
+
+            return task;
+        }
+
+        function toggle_task(e) {
+            var task_item = task_for_event(e);
+
+            if (task_item) {
+                var running = task_item["running"];
+                if (running) {
+                    task_item["running"] = false;
+                } else {
+                    task_item["running"] = true;
+                }
+
+                update_list();
+            }
+        }
+
+        function remove_task(e) {
+            var task_item = task_for_event(e);
+            if (task_item) {
+                var task_div = task_item["ele_div"];
+                
+                list.removeChild(task_div);
+                
+                var index = tasks.indexOf(task_item);
+                if (index > -1) {
+                    tasks.splice(index, 1);
+                }
+            }
+        }
+
+        setInterval(function(){
+            for (var i = 0; i < tasks.length; i++) {
+                var task_item = tasks[i];
+                if (task_item["running"]) {
+                    var time = Number(task_item["time"]);
+                    time -= 1;
+                    if (time <= 0) {
+                        time = 0;
+                        task_item["running"] = false;
+                    }
+                    
+                    task_item["time"] = time;
+                }
+            }
+            update_list();
+        }, 1000);
+
+        </script>
+    </body>
+</html>
