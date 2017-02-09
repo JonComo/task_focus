@@ -6,7 +6,7 @@
     </head>
 
     <body>
-        <a href="home" id="title">TASK FOCUS</a>
+        <a href="https://joncomo.github.io/task_focus/" id="title">TASK FOCUS</a>
         <div id="controls">
             <input class="inputdata" id="task" type="text" placeholder="TASK" autocapitalize="on"></input>
             <input class="inputdata" id="time" type="number" placeholder="HOURS"></input>
@@ -69,7 +69,7 @@
             task_div.id = "task_item";
 
             var color_id = Math.min(list.children.length, colors.length-1);
-            task_div.style = "background-color:" + colors[color_id] + ";";
+            task_div.style.backgroundColor = colors[color_id];
 
             var p_info = document.createElement('p');
             task_div.appendChild(p_info);
